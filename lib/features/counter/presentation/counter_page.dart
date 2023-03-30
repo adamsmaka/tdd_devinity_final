@@ -1,23 +1,47 @@
-import 'package:flutter/material.dart';
+// Copyright (c) 2023, Adam Smaka
+// https://smaka.dev
 
-class CounterPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../app/core/enums.dart';
+import '../cubit/counter_cubit.dart';
+import '../data/counter_data_source.dart';
+import '../domain/repository/counter_repository.dart';
+
+class CounterPage extends StatelessWidget {
   const CounterPage({super.key});
 
   @override
-  State<CounterPage> createState() => _CounterPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => CounterCubit(CounterRepository(CounterDataSource())),
+      child: BlocBuilder<CounterCubit, CounterState>(
+        builder: (context, state) {
+          return CounterView(state: state);
+        },
+      ),
+    );
+  }
 }
 
-class _CounterPageState extends State<CounterPage> {
-  int _counter = 0;
+class CounterView extends StatelessWidget {
+  const CounterView({
+    super.key,
+    required this.state,
+  });
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  final CounterState state;
 
   @override
   Widget build(BuildContext context) {
+    if (state.status == Status.loading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Flutter TDD Demo'),
@@ -35,7 +59,7 @@ class _CounterPageState extends State<CounterPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              _counter.toString(),
+              state.value.toString(),
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             const SizedBox(height: 128),
@@ -43,7 +67,9 @@ class _CounterPageState extends State<CounterPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: () {
+          context.read<CounterCubit>().increment();
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),

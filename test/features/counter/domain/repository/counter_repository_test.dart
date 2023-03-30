@@ -7,6 +7,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:tdd_devinity_final/features/counter/data/counter_data_source.dart';
+import 'package:tdd_devinity_final/features/counter/domain/repository/counter_repository.dart';
 
 class MockCounterDataSource extends Mock implements CounterDataSource {}
 
@@ -21,6 +23,15 @@ void main() {
   });
 
   // should call incraseValue from data source
+  test('should call incraseValue from data source', () async {
+    verifyNever(() => dataSource.increaseValue());
+    await sut.increaseValue();
+    verify(() => dataSource.increaseValue()).called(1);
+  });
 
   // should return value from data source
+  test('should return value from data source', () async {
+    final result = await sut.increaseValue();
+    expect(result, 5);
+  });
 }
